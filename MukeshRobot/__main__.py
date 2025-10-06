@@ -1138,6 +1138,42 @@ def main():
     updater.idle()
 
 
+import asyncio
+from pyrogram import Client
+from pytgcalls import PyTgCalls
+from MukeshRobot.config import Config
+
+# Import all handlers (features)
+from MukeshRobot.modules import start, vc_player
+
+bot = Client(
+    "MukeshRobot",
+    api_id=Config.API_ID,
+    api_hash=Config.API_HASH,
+    bot_token=Config.TOKEN,
+)
+
+# Userbot for joining VC
+userbot = Client(
+    "MukeshUserbot",
+    api_id=Config.API_ID,
+    api_hash=Config.API_HASH,
+    session_string=Config.SESSION_STRING,
+)
+
+pytgcalls = PyTgCalls(userbot)
+
+async def main():
+    await bot.start()
+    await userbot.start()
+    await pytgcalls.start()
+    print("✅ MukeshRobot started successfully with VC Music handler!")
+    await asyncio.get_event_loop().create_future()  # keep alive
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+
 if __name__ == "__main__":
     LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))
     telethn.start(bot_token=TOKEN)
