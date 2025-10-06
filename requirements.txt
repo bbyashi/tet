@@ -51,6 +51,6 @@ youtube-search-python==1.6.0
 yt_dlp==2025.9.23
 pyrogram==2.0.105
 tgcrypto==1.2.4
-pytgcalls==2.1.0
-tgcalls==2.0.0
+pytgcalls
+tgcalls
 psycopg2==2.9.8
