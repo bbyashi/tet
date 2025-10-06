@@ -2,18 +2,14 @@ from pyrogram import Client, filters
 from pytgcalls import PyTgCalls
 from pytgcalls.types import AudioPiped
 from yt_dlp import YoutubeDL
+from MukeshRobot.config import Config
 import os
 
-from config import Config
+# Initialize userbot for VC
+userbot = Client("MukeshUserbot", api_id=Config.API_ID, api_hash=Config.API_HASH, session_string=Config.SESSION_STRING)
+pytgcalls = PyTgCalls(userbot)
 
-# --- Setup ---
-API_ID = Config.API_ID
-API_HASH = Config.API_HASH
-SESSION_STRING = ""  # add your user session string (for VC join)
-USERBOT = Client("UserBot", api_id=API_ID, api_hash=API_HASH, session_string=SESSION_STRING)
-pytgcalls = PyTgCalls(USERBOT)
-
-# --- Download dir ---
+# Create downloads folder
 if not os.path.exists("downloads"):
     os.makedirs("downloads")
 
@@ -35,20 +31,38 @@ async def play_music(client, message):
         return await message.reply("Usage: `/play <song name or YouTube URL>`")
 
     query = " ".join(message.command[1:])
-    msg = await message.reply(f"🔍 Searching `{query}` ...")
+    msg = await message.reply(f"🎵 Searching `{query}`...")
 
     try:
         file = download_audio(query)
-        await msg.edit("🎶 Download complete, joining VC...")
+        await msg.edit("📥 Download complete! Joining VC...")
 
         chat_id = message.chat.id
         await pytgcalls.join_group_call(chat_id, AudioPiped(file))
-        await msg.edit(f"🎧 Now playing: **{os.path.basename(file)}**")
+        await msg.edit(f"🎶 Now playing: **{os.path.basename(file)}**")
     except Exception as e:
         await msg.edit(f"❌ Error: `{e}`")
 
+@Client.on_message(filters.command("pause") & filters.group)
+async def pause_music(client, message):
+    try:
+        await pytgcalls.pause_stream(message.chat.id)
+        await message.reply("⏸️ Music paused.")
+    except:
+        await message.reply("❌ Not playing anything.")
+
+@Client.on_message(filters.command("resume") & filters.group)
+async def resume_music(client, message):
+    try:
+        await pytgcalls.resume_stream(message.chat.id)
+        await message.reply("▶️ Music resumed.")
+    except:
+        await message.reply("❌ Nothing to resume.")
+
 @Client.on_message(filters.command("stop") & filters.group)
 async def stop_music(client, message):
-    chat_id = message.chat.id
-    await pytgcalls.leave_group_call(chat_id)
-    await message.reply("⏹️ Stopped playback and left VC.")
+    try:
+        await pytgcalls.leave_group_call(message.chat.id)
+        await message.reply("⏹️ Stopped playback and left VC.")
+    except:
+        await message.reply("❌ Already not in VC.")
